@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FollowCamera : MonoBehaviour
+namespace RPG.Core
 {
-    [SerializeField] protected Transform target = null;
-
-    void LateUpdate() // Late because we want to execute this after the navmesh/click
+    public class FollowCamera : MonoBehaviour
     {
-        if (target)
+        [SerializeField] protected Transform target = null;
+
+        void LateUpdate() // Late because we want to execute this after the navmesh/click
         {
-            transform.position = target.position;
+            if (target)
+            {
+                transform.position = target.position;
+            }
         }
     }
 }

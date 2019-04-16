@@ -4,45 +4,58 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent))]
-public class Mover : MonoBehaviour
+using RPG.Core;
+
+namespace RPG.Movement
 {
-    [SerializeField] Transform target = null;
-
-    NavMeshAgent nm = null;
-    Animator an = null;
-
-    void Start()
+    [RequireComponent(typeof(NavMeshAgent))]
+    public class Mover : MonoBehaviour, IAction
     {
-        nm = GetComponent<NavMeshAgent>();
-        an = GetComponent<Animator>();
-    }
+        //[SerializeField] Transform target = null;
 
-    void Update()
-    {
-        if(Input.GetMouseButton(0))
+        NavMeshAgent nm = null;
+        Animator an = null;
+
+        void Start()
         {
-            MoveToCursor();
+            nm = GetComponent<NavMeshAgent>();
+            an = GetComponent<Animator>();
         }
 
-        UpdateAnimator();
-    }
-
-    private void UpdateAnimator()
-    {
-        Vector3 velocity = nm.velocity;
-        Vector3 localVelocity = transform.InverseTransformDirection(velocity); // from world to player frame.
-        an.SetFloat("forwardSpeed", localVelocity.z);
-    }
-
-    private void MoveToCursor()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        bool hasHit = Physics.Raycast(ray, out RaycastHit hit); // <== inlined declaration of local variable hit.
-        //Debug.DrawRay(ray.origin, ray.direction * 30.0f, Color.red, 1.0f);
-        if (hasHit) //if (hit.collider)
+        void Update()
         {
-            nm.destination = hit.point;
+            UpdateAnimator();
+        }
+
+        public void StartMoveAction(Vector3 destination)
+        {
+            GetComponent<ActionScheduler>().StartAction(this);
+            MoveTo(destination);
+        }
+
+        public void MoveTo(Vector3 location)
+        {
+            nm.destination = location;
+            nm.isStopped = false;
+        }
+
+        #region IAction overrides
+        public void Cancel()
+        {
+            nm.isStopped = true;
+        }
+
+        public string GetName()
+        {
+            return name;
+        }
+        #endregion
+
+        private void UpdateAnimator()
+        {
+            Vector3 velocity = nm.velocity;
+            Vector3 localVelocity = transform.InverseTransformDirection(velocity); // from world to player frame.
+            an.SetFloat("forwardSpeed", localVelocity.z);
         }
     }
 }
